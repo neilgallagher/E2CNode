@@ -21,6 +21,7 @@ var systemStatusSchema = new Schema({
     }
 });
 
+//var x = 0 ;
 
 var systemStatus = mongoose.model('systemStatus', systemStatusSchema);
 
