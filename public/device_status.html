@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Device Status example</title>
+    <style type="text/css" title="currentStyle">
+        @import "http://datatables.net/release-datatables/media/css/demo_page.css"; @import "http://datatables.net/release-datatables/media/css/header.ccss";
+        @import "http://datatables.net/release-datatables/media/css/demo_table.css";
+    </style>
+    <script type="text/javascript" language="javascript" src="http://datatables.net/release-datatables/media/js/jquery.js"></script>
+    <script type="text/javascript" language="javascript" src="http://datatables.net/release-datatables/media/js/jquery.dataTables.js"></script>
+<style>
+
+
+    table.pretty {
+        width: 100%;
+        clear: both;
+        font-family: Arial, Geneva, sans-serif;
+        font-size: 14px;
+    }
+
+    table.pretty td,
+    table.pretty th {
+        padding: 5px;
+        border: 1px solid white;
+    }
+
+        /* Header cells */
+    table.pretty thead th {
+        text-align: center;
+        background: #66a9bd;
+    }
+
+        /* Body cells */
+    table.pretty tbody th {
+        text-align: left;
+        background: #91c5d4;
+    }
+
+    table.pretty tbody td {
+        text-align: center;
+        background: #d5eaf0;
+    }
+
+    table.pretty tbody tr.odd td {
+        background: #bcd9e1;
+    }
+        /* Footer cells */
+    table.pretty tfoot th {
+        background: #b0cc7f;
+        text-align: left;
+    }
+
+    table.pretty tfoot td {
+        background: #d7e1c5;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    div.dataTables_wrapper {
+        background-color: #719ba7;
+    }
+</style>
+</head>
+<body>
+<script>
+
+    function InitApplicationTable()
+    {
+        oOverviewTable =$('#app_status').dataTable(
+        {
+            "bPaginate": true,
+            "bJQueryUI": true,  // ThemeRoller-stöd
+            "bLengthChange": false,
+            "bFilter": false,
+            "bSort": true,
+            "bInfo": true,
+            "bAutoWidth": true,
+            "bProcessing": true,
+            "iDisplayLength": 10,
+            "aoColumns": [
+                { "sTitle": "Name" },
+                { "sTitle": "Version" }
+            ],
+            "sAjaxSource": '/device_status?option=0'
+        });
+    }
+
+    function InitLogTable()
+    {
+        oOverviewTable =$('#log_status').dataTable(
+                {
+                    "bPaginate": true,
+                    "bJQueryUI": true,  // ThemeRoller-stöd
+                    "bLengthChange": false,
+                    "bFilter": false,
+                    "bSort": true,
+                    "bInfo": true,
+                    "bAutoWidth": true,
+                    "bProcessing": true,
+                    "iDisplayLength": 10,
+                    "aoColumns": [
+                        { "sTitle": "Event Time" },
+                        { "sTitle": "Message" }
+                    ],
+                    "sAjaxSource": '/device_status?option=2'
+                });
+    }
+
+    function InitOverviewDataTable()
+    {
+        oOverviewTable =$('#device_status').dataTable(
+        {
+            "bPaginate": true,
+            "bJQueryUI": true,  // ThemeRoller-stöd
+            "bLengthChange": false,
+            "bFilter": false,
+            "bSort": true,
+            "bInfo": true,
+            "bAutoWidth": true,
+            "bProcessing": true,
+            "iDisplayLength": 10,
+            "aoColumns": [
+                { "sTitle": "Name" },
+                { "sTitle": "Device Id" },
+                { "sTitle": "Name" },
+                { "sTitle": "Level", "sClass": "center" },
+                { "sTitle": "Status", "sClass": "center" }
+            ],
+            "sAjaxSource": '/device_status?option=1',
+            "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                /* Append the grade to the default row class name */
+                console.log(aData[4]);
+                if ( aData[4] === "Working" )
+                {
+                    $('td:eq(4)', nRow).css('background-color', 'green'); //html( '<b>A</b>' );//alters html, NOT class
+                }
+                else if ( aData[4] === "Communication Error" )
+                {
+                    $('td:eq(4)', nRow).css('background-color', 'yellow'); //html( '<b>A</b>' );//alters html, NOT class
+                }
+                else if ( aData[4] === "Unknown Error" )
+                {
+                    $('td:eq(4)', nRow).css('background-color', 'red'); //html( '<b>A</b>' );//alters html, NOT class
+                }
+                return nRow;
+            }
+        });
+    }
+
+    function RefreshTable(tableId, urlData)
+    {
+        $.getJSON(urlData, null, function( json )
+        {
+            table = $(tableId).dataTable();
+            oSettings = table.fnSettings();
+
+            table.fnClearTable(this);
+
+            for (var i=0; i<json.aaData.length; i++)
+            {
+                table.oApi._fnAddData(oSettings, json.aaData[i]);
+            }
+
+            oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
+            table.fnDraw();
+        });
+    }
+
+    function AutoReload()
+    {
+        RefreshTable('#device_status', '/device_status?option=1');
+        RefreshTable('#log_status', '/device_status?option=2');
+        setTimeout(function(){AutoReload();}, 1000);
+    }
+
+    $(document).ready(function ()
+    {
+        InitApplicationTable() ;
+        InitLogTable() ;
+        InitOverviewDataTable();
+        setTimeout(function(){AutoReload();}, 1000);
+    });
+</script>
+
+<h1>iSocket REST Demo</h1>
+
+<h2>Applications</h2>
+<table id="app_status" class="pretty">
+</table>
+
+<br>
+<h2>Devices</h2>
+<table id="device_status" class="pretty">
+</table>
+
+<br>
+<h2>Logs</h2>
+<table id="log_status" class="pretty">
+</table>
+
+</body>
+</html>

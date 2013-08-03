@@ -1,0 +1,15 @@
+{
+  "name": "E2CNode",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "express": "3.0.x",
+    "jade": "*",
+    "mongoose": "~3.6.x"
+  },
+  "author": "Neil Gallagher",
+  "description": "A web app that supports an api for reading and writing device status information."
+}
